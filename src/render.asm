@@ -12,8 +12,8 @@ section .data
     screen times ARRAY_SIZE db 0b10001001
 
     EMPTY_CHAR db ' '
-    PLAYER_CHAR db '#'
-    FOOD_CHAR db 'o'
+    PLAYER_CHAR db 'w'
+    FOOD_CHAR db 'U'
 
     END_LINE db 0x0A
 
@@ -25,29 +25,21 @@ _render:
 
 .loop:
     cmp rcx, ARRAY_SIZE
-    jge .done                   ; Exit loop when rcx reaches ARRAY_SIZE
+    jge .done                   ; Exit loop when rcx reaches ARRAY_SIZE. Not sure why jge, but it works so yes
 
     mov r8b, byte [screen + rcx]
 
-    mov rax, rcx                ; Calculate new line
+    ; Calculate new line
+    mov rax, rcx
     mov rbx, SCREEN_X_BYTES
     xor rdx, rdx
-    div rbx                     ; How the fuck is the remainder of 8/12 0?
+    div rbx                     ; How the fuck is the remainder of 8/12 0? FIXED
 
     cmp rdx, 0                  ; No remainder = new line
     jz .reached_new_line
 
-    jmp .continue_loop          ; Otherwise continue
-
-.reached_new_line:
-    mov rsi, END_LINE           ; Load end line character
-    push rcx
-    call display                ; Print end line character
-    pop rcx
-
 .continue_loop:
     mov rax, 4 ; Holds how many 2 bit pairs are remaining
-    inc rcx
 
 .loop_bit:
     mov bl, r8b
@@ -80,16 +72,25 @@ _render:
     call display
     pop rcx
     pop rax
-    jmp .check_if_end_of_bit_loop
 
-.check_if_end_of_bit_loop:
     shr r8b, 2
     dec rax
     jnz .loop_bit
+
+    inc rcx
     jmp .loop
+
+.reached_new_line:
+    mov rsi, END_LINE           ; Load end line character
+    push rcx
+    call display                ; Print end line character
+    pop rcx
+
+    jmp .continue_loop
 
 .done:
     ret
+
 
 ; Displays a singular character in console
 ; Parameters:
