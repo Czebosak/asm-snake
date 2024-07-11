@@ -7,9 +7,9 @@ section .data
     SCREEN_X_BYTES equ SCREEN_X / 4
 
     SCREEN_SIZE equ SCREEN_X * SCREEN_Y
-    ARRAY_SIZE equ SCREEN_SIZE / 4 -2
+    ARRAY_SIZE equ SCREEN_SIZE / 4
 
-    screen times ARRAY_SIZE db 0b01010101
+    screen times ARRAY_SIZE db 0b10001001
 
     EMPTY_CHAR db ' '
     PLAYER_CHAR db '#'
@@ -24,11 +24,15 @@ _render:
     xor rcx, rcx                ; Clear rcx (index into screen)
 
 .loop:
+    cmp rcx, ARRAY_SIZE
+    jge .done                   ; Exit loop when rcx reaches ARRAY_SIZE
+
     mov r8b, byte [screen + rcx]
 
-    mov rax, rcx
+    mov rax, rcx                ; Calculate new line
     mov rbx, SCREEN_X_BYTES
-    div rbx
+    xor rdx, rdx
+    div rbx                     ; How the fuck is the remainder of 8/12 0?
 
     cmp rdx, 0                  ; No remainder = new line
     jz .reached_new_line
@@ -84,6 +88,8 @@ _render:
     jnz .loop_bit
     jmp .loop
 
+.done:
+    ret
 
 ; Displays a singular character in console
 ; Parameters:

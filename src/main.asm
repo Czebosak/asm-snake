@@ -12,4 +12,3 @@ exit:
     mov rax, 60         ; syscall nubmer for exit
     xor rdi, rdi        ; Error code 0
     syscall
-
